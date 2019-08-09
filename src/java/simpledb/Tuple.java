@@ -13,6 +13,9 @@ public class Tuple implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private Field[] fields;
+    private TupleDesc tupleDesc;
+
     /**
      * Create a new tuple with the specified schema (type).
      *
@@ -21,15 +24,15 @@ public class Tuple implements Serializable {
      *            instance with at least one field.
      */
     public Tuple(TupleDesc td) {
-        // some code goes here
+        fields = new Field[td.numFields()];
+        tupleDesc = td;
     }
 
     /**
      * @return The TupleDesc representing the schema of this tuple.
      */
     public TupleDesc getTupleDesc() {
-        // some code goes here
-        return null;
+        return tupleDesc;
     }
 
     /**
@@ -60,8 +63,10 @@ public class Tuple implements Serializable {
      *            new value for the field.
      */
     public void setField(int i, Field f) {
-        // some code goes here
+        checkIndex(i);
+        fields[i] = f;
     }
+
 
     /**
      * @return the value of the ith field, or null if it has not been set.
@@ -70,8 +75,16 @@ public class Tuple implements Serializable {
      *            field index to return. Must be a valid index.
      */
     public Field getField(int i) {
-        // some code goes here
-        return null;
+        checkIndex(i);
+        return fields[i];
+    }
+
+    private int numFileds(){
+        return tupleDesc.numFields();
+    }
+
+    private void checkIndex(int i) {
+        if (i >= numFileds()) throw new IndexOutOfBoundsException(i + " out of box of " + tupleDesc.numFields());
     }
 
     /**
@@ -83,8 +96,13 @@ public class Tuple implements Serializable {
      * where \t is any whitespace (except a newline)
      */
     public String toString() {
-        // some code goes here
-        throw new UnsupportedOperationException("Implement this");
+        StringBuilder sb = new StringBuilder();
+        for (Field field : fields) {
+            sb.append(field.toString());
+            sb.append('\t');
+        }
+        if (sb.length() > 1) sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
     }
 
     /**
@@ -93,8 +111,19 @@ public class Tuple implements Serializable {
      * */
     public Iterator<Field> fields()
     {
-        // some code goes here
-        return null;
+        return new Iterator<Field>() {
+            private int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return index < numFileds();
+            }
+
+            @Override
+            public Field next() {
+                return fields[index];
+            }
+        };
     }
 
     /**
@@ -102,6 +131,6 @@ public class Tuple implements Serializable {
      * */
     public void resetTupleDesc(TupleDesc td)
     {
-        // some code goes here
+        this.tupleDesc = td;
     }
 }
