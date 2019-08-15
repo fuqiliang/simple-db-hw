@@ -15,6 +15,9 @@ public class HeapPage implements Page {
 
     final HeapPageId pid;
     final TupleDesc td;
+    //each page has a header that consists of a bitmap with one bit per tuple slot.
+    //If the bit corresponding to a particular tuple is 1,it indicates that the tuple is valid;
+    //if it is 0, the tuple is invalid (e.g., has been deleted or was never initialized.)
     final byte header[];
     final Tuple tuples[];
     final int numSlots;
@@ -39,7 +42,7 @@ public class HeapPage implements Page {
      * @see BufferPool#getPageSize()
      */
     public HeapPage(HeapPageId id, byte[] data) throws IOException {
-        this.pid = id;
+        this.pid = id; // contains tableID + page number
         this.td = Database.getCatalog().getTupleDesc(id.getTableId());
         this.numSlots = getNumTuples();
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(data));
@@ -66,8 +69,8 @@ public class HeapPage implements Page {
         @return the number of tuples on this page
     */
     private int getNumTuples() {        
-        // some code goes here
-        return 0;
+        // _tuples per page_ = floor((_page size_ * 8) / (_tuple size_ * 8 + 1))
+        return (BufferPool.getPageSize() *  8) / (td.getSize() * 8 + 1);
 
     }
 
@@ -76,9 +79,8 @@ public class HeapPage implements Page {
      * @return the number of bytes in the header of a page in a HeapFile with each tuple occupying tupleSize bytes
      */
     private int getHeaderSize() {        
-        
-        // some code goes here
-        return 0;
+        // headerBytes = ceiling(tupsPerPage/8)
+        return (int)(Math.ceil(this.numSlots * 1.0 / 8));
                  
     }
     
@@ -289,8 +291,9 @@ public class HeapPage implements Page {
      * Returns true if associated slot on this page is filled.
      */
     public boolean isSlotUsed(int i) {
-        // some code goes here
-        return false;
+        int headerbit = i % 8;
+        int headerbyte = (i - headerbit) / 8;
+        return (header[headerbyte] & (1 << headerbit)) != 0;
     }
 
     /**

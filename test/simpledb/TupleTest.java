@@ -7,7 +7,18 @@ import org.junit.Test;
 
 import simpledb.systemtest.SimpleDbTestBase;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TupleTest extends SimpleDbTestBase {
+
+    @Test public void test(){
+        Map<Integer, Integer> map = new HashMap<>();
+        map.put(1, 1);
+        map.put(2, 2);
+        map.put(3, 3);
+        map.put(4, 4);
+    }
 
     /**
      * Unit test for Tuple.getField() and Tuple.setField()
